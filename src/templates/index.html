@@ -1,0 +1,31 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <link href="{{ url_for('static', path='/main.css') }}" rel="stylesheet">
+    <title>Convertion by Whisper</title>
+</head>
+<body>
+<form action="/" enctype="multipart/form-data" method="post">
+    <input type="file" accept="audio/*" capture id="recorder" name="file" required ><br>
+    
+    <audio id="player" controls></audio><br>
+
+    <script>
+        const recorder = document.getElementById('recorder');
+        const player = document.getElementById('player');
+
+        recorder.addEventListener('change', function (e) {
+          const file = e.target.files[0];
+          const url = URL.createObjectURL(file);
+          player.src = url;
+        });
+    </script>
+
+    <input type="submit" id="submit" value="Convert audio to text">
+    
+    {% if text %}
+        <p>{{ text }}</p>
+    {% endif %}
+</form>
+</body>
+</html>

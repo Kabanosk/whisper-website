@@ -1,0 +1,27 @@
+body {
+    background-color: grey;
+}
+
+form {
+    width:100%;
+    text-align: center;
+}
+
+input, audio{
+    width: 25em;
+    margin: 2em 0
+}
+
+#recorder {
+    font-size: 1em;
+    width: 20em;
+}
+
+#submit {
+    border-radius: 3em;
+    height: 5em;
+}
+
+p {
+    font-size: 1.5em;
+}
