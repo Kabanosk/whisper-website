@@ -8,6 +8,15 @@
 <form action="/" enctype="multipart/form-data" method="post">
     <input type="file" accept="audio/*" capture id="recorder" name="file" required ><br>
     
+    <label for="model_type">Choose a Whisper model which you want to use:<br></label> <br>
+    <select id="model_type" name="model_type">
+        <option value="tiny">tiny</option>
+        <option value="base">base</option>
+        <option value="small">small</option>
+        <option value="medium">medium</option>
+        <option value="large">large</option>
+    </select><br>
+    
     <audio id="player" controls></audio><br>
 
     <script>
