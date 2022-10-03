@@ -5,7 +5,6 @@ from fastapi import FastAPI, Request, File, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
-import librosa
 
 from whisper import whisper
 
