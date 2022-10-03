@@ -1,5 +1,7 @@
 fastapi~=0.85.0
 uvicorn
+jinja2
+
 numpy
 torch
 tqdm
