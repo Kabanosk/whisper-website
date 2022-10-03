@@ -1,4 +1,4 @@
 @echo off
 
-pip "install" "-r" "%CD%.\requirements.txt"
+pip "install" "-r" "..\requirements.txt"
 python3 "run.py"
