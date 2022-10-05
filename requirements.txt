@@ -2,6 +2,7 @@ fastapi~=0.85.0
 uvicorn
 jinja2
 python-multipart
+git+https://github.com/openai/whisper.git 
 
 numpy
 torch
