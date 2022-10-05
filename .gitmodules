@@ -1,3 +1,0 @@
-[submodule "src/whisper"]
-	path = src/whisper
-	url = git@github.com:openai/whisper.git
