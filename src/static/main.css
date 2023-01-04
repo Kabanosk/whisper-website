@@ -8,6 +8,10 @@ input, audio{
     margin: 2em 0;
 }
 
+#interval {
+    width: 10em;
+}
+
 #recorder {
     font-size: 1em;
     width: 20em;
@@ -20,4 +24,7 @@ input, audio{
 
 p {
     font-size: 1.5em;
+    white-space: pre-line;
 }
+
+
