@@ -1,6 +1,7 @@
 import ast
 import asyncio
 import subprocess
+from pprint import pprint
 
 import srt as srt
 from datetime import timedelta, datetime
@@ -10,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import ffmpeg
 import numpy as np
-import whisper
+import stable_whisper
 
 
 # a function that takes a file and a start and length timestamps, and will return the audio data in that section as a
@@ -27,27 +28,11 @@ def get_audio_buffer(filename: str, start: int, length: int):
 
 # a function that takes a file and an interval that deterimines the distance between each timestamp in the
 # outputted dictionary
-def transcribe_time_stamps(filename: str, interval: str, model):
-    interval = int(interval)
-    timestamps = {}
-    pos = 0
-
-    args = ("ffprobe", "-show_entries", "format=duration", "-i", filename)
-    popen = subprocess.Popen(args, stdout=subprocess.PIPE)
-    popen.wait()
-    output = popen.stdout.read()
-    duration = float(output.decode("utf-8").split("\n")[1].split("=")[1])
-
-    while duration > pos:
-        result = model.transcribe(get_audio_buffer(filename, pos, interval))
-        timestamps.update(
-            {str(timedelta(seconds=pos)) + " --> " + str(timedelta(seconds=(pos + interval))): result["text"]})
-        pos += interval
-
+def transcribe_time_stamps(segments: list):
     string = ""
-    for timestamp, text in timestamps.items():
-        string += timestamp + text + "\n"
-    return string, timestamps
+    for seg in segments:
+        string += " ".join([str(seg.start), "->", str(seg.end), ": ", seg.text.strip(), "\n"])
+    return string
 
 
 def make_srt_subtitles(timestamps: dict):
@@ -91,35 +76,24 @@ def add_audio(request: Request, file: bytes = File()):
     data = request.form()
     super_data = asyncio.run(data)
     model_type = super_data['model_type']
-    interval = super_data['interval']
+    try:
+        timestamps = super_data['timestamps']
+    except:
+        timestamps = None
     filename = super_data['filename']
     filetype = super_data['file_type']
-    model = whisper.load_model(model_type)
 
-    if interval == "" and filename == "":
-        result = model.transcribe("audio.mp3")
-        return template.TemplateResponse('index.html', {"request": request, "text": result['text']})
+    model = stable_whisper.load_model(model_type)
+    result = model.transcribe("audio.mp3", regroup=False)
+
+    if not timestamps and filename == "":
+        return template.TemplateResponse('index.html', {"request": request, "text": result.text})
     else:
-        if interval == "":
-            interval = "10"
-        result, timestamps = transcribe_time_stamps("audio.mp3", interval, model)
+        timestamps_text = transcribe_time_stamps(result.segments)
 
-        srt_f = False
         if filename and filetype:
-            srt_f = timestamps
+            result.to_srt_vtt(f"../data/{filename}.{filetype}")
+            return template.TemplateResponse('index.html', {"request": request, "text": ""})
+        elif timestamps:
+            return template.TemplateResponse('index.html', {"request": request, "text": timestamps_text})
 
-        if srt_f:
-            return template.TemplateResponse('index.html', {"request": request, "text": result, "file": srt_f,
-                                                            "filename": filename, "filetype": filetype})
-        else:
-            return template.TemplateResponse('index.html', {"request": request, "text": result})
-
-
-@app.get('/file-data/{filename}/{filetype}/{srt_s}')
-def download_subtitles(filename, filetype, srt_s):
-    srt_d = ast.literal_eval(srt_s)
-
-    s = make_srt_subtitles(srt_d)
-
-    return Response(content=s, media_type='application/octet-stream',
-                    headers={'Content-Disposition': f'attachment; filename="{filename}.{filetype}"'})

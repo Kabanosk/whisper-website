@@ -17,8 +17,8 @@
         <option value="large">large</option>
     </select><br>
 
-    <label for="interval">Enter the time between timestamps (leave blank for no timestamps):</label>
-    <input type="text" id="interval" name="interval"><br><br>
+    <input type="checkbox" id="timestamps" name="timestamps">
+    <label for="timestamps">Do you want timestamps to be printed?</label><br><br>
 
 
     <label for="file_type">Saving subtitles:<br></label>
@@ -43,10 +43,6 @@
     </script>
 
     <input type="submit" id="submit" value="Convert audio to text"><br><br>
-
-    {% if file %}
-        <a href="/file-data/{{ filename }}/{{ filetype }}/{{ file }}" download>Download File</a>
-    {% endif %}
 
     {% if text %}
         <p>{{ text }}</p>
