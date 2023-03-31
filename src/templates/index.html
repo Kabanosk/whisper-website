@@ -19,7 +19,16 @@
 
     <label for="interval">Enter the time between timestamps (leave blank for no timestamps):</label>
     <input type="text" id="interval" name="interval"><br><br>
-    
+
+
+    <label for="file_type">Saving subtitles:<br></label>
+    <select id="file_type" name="file_type">
+        <option value="srt">srt</option>
+        <option value="vtt">vtt</option>
+    </select><br><br>
+    <label for="filename">Enter the filename for subtitles - it will be saved as .srt file<br></label>
+    <input type="text" id="filename" name="filename"><br><br>
+
     <audio id="player" controls></audio><br>
 
     <script>
@@ -33,8 +42,12 @@
         });
     </script>
 
-    <input type="submit" id="submit" value="Convert audio to text">
-    
+    <input type="submit" id="submit" value="Convert audio to text"><br><br>
+
+    {% if file %}
+        <a href="/file-data/{{ filename }}/{{ filetype }}/{{ file }}" download>Download File</a>
+    {% endif %}
+
     {% if text %}
         <p>{{ text }}</p>
     {% endif %}
