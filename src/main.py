@@ -6,7 +6,7 @@ from pprint import pprint
 from pathlib import Path
 import srt as srt
 from datetime import timedelta, datetime
-from fastapi import FastAPI, Request, File, Response
+from fastapi import FastAPI, Request, File, Response, Form
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -68,19 +68,16 @@ def index(request: Request):
 
 
 @app.post('/')
-def add_audio(request: Request, file: bytes = File()):
+def add_audio(
+        request: Request,
+        file: bytes = File(),
+        model_type: str = Form("tiny"),
+        timestamps: Optional[str] = Form("False"),
+        filename: str = Form(""),
+        file_type: str = Form("srt"),
+):
     with open('audio.mp3', 'wb') as f:
         f.write(file)
-
-    data = request.form()
-    super_data = asyncio.run(data)
-    model_type = super_data['model_type']
-    try:
-        timestamps = super_data['timestamps']
-    except:
-        timestamps = None
-    filename = super_data['filename']
-    filetype = super_data['file_type']
 
     model = stable_whisper.load_model(model_type)
     result = model.transcribe("audio.mp3", regroup=False)
@@ -90,16 +87,18 @@ def add_audio(request: Request, file: bytes = File()):
     else:
         timestamps_text = transcribe_time_stamps(result.segments)
 
-        if filename and filetype:
-            result.to_srt_vtt(f"../data/{filename}.{filetype}")
+        if filename and file_type:
+            result.to_srt_vtt(f"../data/{filename}.{file_type}")
             return template.TemplateResponse('index.html', {"request": request, "text": ""})
-        elif timestamps:
+        elif timestamps == "True":
             return template.TemplateResponse('index.html', {"request": request, "text": timestamps_text})
+
 
 
 # Added the following feature to automatically download the transcripted file. The file will download in the web browser of the user. 
 @app.post('/download/')
-async def download_subtitle(request: Request, file: bytes = File(), model_type: str = "tiny", timestamps: Optional[bool] = None, filename: str = "subtitles", file_type: str = "srt"):
+async def download_subtitle(request: Request, file: bytes = File(), model_type: str = "tiny", timestamps: Optional[str] = Form("False"), filename: str = "subtitles", file_type: str = "srt"):
+
     # Save the uploaded file
     with open('audio.mp3', 'wb') as f:
         f.write(file)
@@ -109,7 +108,7 @@ async def download_subtitle(request: Request, file: bytes = File(), model_type: 
     result = model.transcribe("audio.mp3", regroup=False)
 
     # Create a timestamps text if needed
-    if timestamps:
+    if timestamps == "True":
         timestamps_text = transcribe_time_stamps(result.segments)
 
     # Create the subtitle file
