@@ -1,52 +1,67 @@
-<!DOCTYPE HTML>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="{{ url_for('static', path='/main.css') }}" rel="stylesheet">
-    <title>Convertion by Whisper</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversion by Whisper</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+
 </head>
 <body>
-<form action="/" enctype="multipart/form-data" method="post">
-    <input type="file" accept="audio/*" capture id="recorder" name="file" required ><br>
+<div class="container mt-4">
+    <h1 class="mb-4">Audio to Text Converter</h1>
+    <form id="conversion-form" enctype="multipart/form-data" method="post">
+        <div class="mb-3">
+            <label for="recorder" class="form-label">Select audio file:</label>
+            <input type="file" accept="audio/*" capture id="recorder" name="file" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label for="model_type" class="form-label">Choose a Whisper model:</label>
+            <select id="model_type" name="model_type" class="form-select">
+                <option value="tiny">tiny</option>
+                <option value="base">base</option>
+                <option value="small">small</option>
+                <option value="medium">medium</option>
+                <option value="large">large</option>
+            </select>
+        </div>
+
+        <div class="mb-3 form-check">
+            <input type="checkbox" id="timestamps" name="timestamps" class="form-check-input">
+            <label for="timestamps" class="form-check-label">Include timestamps</label>
+        </div>
+
+        <div class="mb-3">
+            <label for="file_type" class="form-label">Subtitle file format:</label>
+            <select id="file_type" name="file_type" class="form-select">
+                <option value="srt">srt</option>
+                <option value="vtt">vtt</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="filename" class="form-label">Subtitle file name:</label>
+            <input type="text" id="filename" name="filename" class="form-control">
+        </div>
+
+        <div class="d-flex align-items-center mb-3">
+            <audio id="player" controls class="me-3"></audio>
+            <button type="submit" id="submit" class="btn btn-primary">
+                <span class="spinner-border spinner-border-sm d-none" id="spinner" role="status" aria-hidden="true"></span>
+                Convert audio to text
+            </button>
+        </div>
     
-    <label for="model_type">Choose a Whisper model which you want to use:<br></label> <br>
-    <select id="model_type" name="model_type">
-        <option value="tiny">tiny</option>
-        <option value="base">base</option>
-        <option value="small">small</option>
-        <option value="medium">medium</option>
-        <option value="large">large</option>
-    </select><br>
+            {% if text %}
+                <p class="mt-4">{{ text }}</p>
+            {% endif %}
+        </form>
+    </div>
 
-    <input type="checkbox" id="timestamps" name="timestamps">
-    <label for="timestamps">Do you want timestamps to be printed?</label><br><br>
+    <script src="/static/main.js"></script>
 
 
-    <label for="file_type">Saving subtitles:<br></label>
-    <select id="file_type" name="file_type">
-        <option value="srt">srt</option>
-        <option value="vtt">vtt</option>
-    </select><br><br>
-    <label for="filename">Enter the filename for subtitles in selected format<br></label>
-    <input type="text" id="filename" name="filename"><br><br>
-
-    <audio id="player" controls></audio><br>
-
-    <script>
-        const recorder = document.getElementById('recorder');
-        const player = document.getElementById('player');
-
-        recorder.addEventListener('change', function (e) {
-          const file = e.target.files[0];
-          const url = URL.createObjectURL(file);
-          player.src = url;
-        });
-    </script>
-
-    <input type="submit" id="submit" value="Convert audio to text"><br><br>
-
-    {% if text %}
-        <p>{{ text }}</p>
-    {% endif %}
-</form>
 </body>
 </html>
