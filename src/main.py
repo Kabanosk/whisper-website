@@ -139,5 +139,4 @@ async def download_subtitle(
         headers={'Content-Disposition': f'attachment;filename={subtitle_file}'}
     )
 
-    Path(subtitle_file).unlink()
     return response
