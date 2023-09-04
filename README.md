@@ -11,8 +11,8 @@
 7. Run the `run.py` file - `python3 run.py`
 8. Go to your browser and type `http://127.0.0.1:8000/` if the browser doesn't open
 
-### Run website on localhost with Docker
-#### First time
+## Run website on localhost with Docker
+### First time
 1. Install [Docker](https://docs.docker.com/engine/install/)
 2. Clone the repo - `git clone git@github.com:Kabanosk/whisper-website.git`
 3. Go to repo directory - `cd whisper-website`
@@ -20,7 +20,7 @@
 5. Run Docker container - `docker run --name app_container -p 80:80 app`
 6. Go to your browser and type `http://127.0.0.1:80/`
 
-#### Next time
+### Next time
 
 1. Start your Docker container - `docker start app_container`
 2. Go to your browser and type `http://127.0.0.1:80/`
