@@ -1,5 +1,4 @@
 from datetime import timedelta
-from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, Request, File, Form
@@ -66,33 +65,6 @@ def index(request: Request):
     return template.TemplateResponse('index.html', {"request": request, "text": None})
 
 
-@app.post('/')
-def add_audio(
-        request: Request,
-        file: bytes = File(),
-        model_type: str = Form("tiny"),
-        timestamps: Optional[str] = Form("False"),
-        filename: str = Form(""),
-        file_type: str = Form("srt"),
-):
-    with open('audio.mp3', 'wb') as f:
-        f.write(file)
-
-    model = stable_whisper.load_model(model_type)
-    result = model.transcribe("audio.mp3", regroup=False)
-
-    if not timestamps and filename == "":
-        return template.TemplateResponse('index.html', {"request": request, "text": result.text})
-    else:
-        timestamps_text = transcribe_time_stamps(result.segments)
-
-        if filename and file_type:
-            result.to_srt_vtt(f"../data/{filename}.{file_type}")
-            return template.TemplateResponse('index.html', {"request": request, "text": ""})
-        elif timestamps == "True":
-            return template.TemplateResponse('index.html', {"request": request, "text": timestamps_text})
-
-
 @app.post('/download/')
 async def download_subtitle(
         request: Request,
@@ -109,10 +81,6 @@ async def download_subtitle(
     # Load the model and transcribe the audio
     model = stable_whisper.load_model(model_type)
     result = model.transcribe("audio.mp3", regroup=False)
-
-    # Create a timestamps text if needed
-    if timestamps == "True":
-        timestamps_text = transcribe_time_stamps(result.segments)
 
     subtitle_file = "subtitle.srt"
     # Create the subtitle file
