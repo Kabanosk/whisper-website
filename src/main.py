@@ -9,6 +9,9 @@ import ffmpeg
 import numpy as np
 import srt as srt
 import stable_whisper
+from deep_translator import GoogleTranslator
+
+DEFAULT_MAX_CHARACTERS = 80
 
 
 def get_audio_buffer(filename: str, start: int, length: int):
@@ -36,25 +39,59 @@ def transcribe_time_stamps(segments: list):
     return string
 
 
-def make_srt_subtitles(segments: list):
+def split_text_by_punctuation(text: str, max_length: int):
+    chunks = []
+    while len(text) > max_length:
+
+        split_pos = max(
+            text.rfind(p, 0, max_length) for p in [",", ".", "?", "!"," "] if p in text[:max_length]
+        )
+
+
+        if split_pos == -1:
+            split_pos = max_length
+
+
+        chunks.append(text[:split_pos + 1].strip())
+        text = text[split_pos + 1:].strip()
+
+    if text:
+        chunks.append(text)
+
+    return chunks
+
+
+def translate_text(text: str, translate_to: str):
+    return GoogleTranslator(source='auto', target=translate_to).translate(text=text)
+
+
+def make_srt_subtitles(segments: list,translate_to: str, max_chars: int):
     subtitles = []
     for i, seg in enumerate(segments, start=1):
         start_time = seg.start
         end_time = seg.end
-        text = seg.text.strip()
+        text = translate_text(seg.text.strip(), translate_to)
 
-        subtitle = srt.Subtitle(
-            index=i,
-            start=timedelta(seconds=start_time),
-            end=timedelta(seconds=end_time),
-            content=text
-        )
-        subtitles.append(subtitle)
+        text_chunks = split_text_by_punctuation(text, max_chars)
+
+        duration = (end_time - start_time) / len(text_chunks)
+
+        for j, chunk in enumerate(text_chunks):
+            chunk_start = start_time + j * duration
+            chunk_end = chunk_start + duration
+
+            subtitle = srt.Subtitle(
+                index=len(subtitles) + 1,
+                start=timedelta(seconds=chunk_start),
+                end=timedelta(seconds=chunk_end),
+                content=chunk
+            )
+            subtitles.append(subtitle)
 
     return srt.compose(subtitles)
 
 
-app = FastAPI()
+app = FastAPI(debug=True)
 
 app.mount('/static', StaticFiles(directory='static'), name='static')
 template = Jinja2Templates(directory='templates')
@@ -69,26 +106,27 @@ def index(request: Request):
 async def download_subtitle(
         request: Request,
         file: bytes = File(),
-        model_type: str = "tiny",
+        model_type: str = Form("tiny"),
         timestamps: Optional[str] = Form("False"),
-        filename: str = "subtitles",
-        file_type: str = "srt"
+        filename: str = Form("subtitles"),
+        file_type: str = Form("srt"),
+        max_characters: int = Form(DEFAULT_MAX_CHARACTERS),
+        translate_to: str = Form('spanish'),
 ):
-    # Save the uploaded file
+
     with open('audio.mp3', 'wb') as f:
         f.write(file)
-
-    # Load the model and transcribe the audio
+    
     model = stable_whisper.load_model(model_type)
     result = model.transcribe("audio.mp3", regroup=False)
 
     subtitle_file = "subtitle.srt"
-    # Create the subtitle file
+
     if file_type == "srt":
         subtitle_file = f"{filename}.srt"
         with open(subtitle_file, "w") as f:
             if timestamps:
-                f.write(make_srt_subtitles(result.segments))
+                f.write(make_srt_subtitles(result.segments, translate_to, max_characters))
             else:
                 f.write(result.text)
     elif file_type == "vtt":
@@ -99,7 +137,7 @@ async def download_subtitle(
             else:
                 f.write(result.text)
 
-    # Create a streaming response with the file
+
     media_type = "application/octet-stream"
     response = StreamingResponse(
         open(subtitle_file, 'rb'),
