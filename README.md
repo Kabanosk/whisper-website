@@ -1,5 +1,11 @@
 ## Website which convert speech to text by Whisper model ([Official Repo](https://github.com/openai/whisper))
 
+This is an adaptation from [https://github.com/Kabanosk/whisper-website/](https://github.com/Kabanosk/whisper-website/)
+
+Added:
+ - Max character per subtitle
+ - Option to translate
+
 ## Hosting website on localhost:
 
 1. Clone the repo - `git clone git@github.com:Kabanosk/whisper-website.git`
