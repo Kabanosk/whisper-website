@@ -6,7 +6,9 @@ RUN apt-get -y upgrade
 RUN apt-get install -y ffmpeg
 
 COPY requirements.txt /app
-RUN pip install -r requirements.txt
+
+RUN pip install uv
+RUN uv pip install --system -r requirements.txt
 
 COPY src/ /app
 
