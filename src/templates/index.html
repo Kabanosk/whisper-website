@@ -37,7 +37,7 @@
         </div>
 
         <div class="mb-3">
-            <label for="filename" class="form-label">Subtitle file name:</label>
+            <label for="filename" class="form-label">Subtitle file name without extension:</label>
             <input type="text" id="filename" name="filename" class="form-control" placeholder="subtitle">
         </div>
 
@@ -49,6 +49,7 @@
         <div class="mb-3">
             <label for="translate_to" class="form-label">Translate to: </label>
             <select name="translate_to" id="translate_to" class="form-select">
+                <option value=no_translation>No translation</option>
                 <option value=english>English</option>
                 <option value=spanish>Spanish</option>
                 <option value=arabic>Arabic</option>
