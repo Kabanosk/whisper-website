@@ -2,7 +2,7 @@
 
 ## Hosting website on localhost:
 
-1. Clone the repo - `git clone https://github.com/ErnestoArtigas/whisper-website.git`
+1. Clone the repo - `git clone https://github.com/Kabanosk/whisper-website.git`
 2. Go to repo directory - `cd whisper-website`
 3. Create virtual environment - `python3 -m venv venv`
 4. Activate the environment - `source venv/bin/activate`/`. venv/bin/activate`
