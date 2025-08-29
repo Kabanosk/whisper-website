@@ -70,7 +70,12 @@ def make_srt_subtitles(segments: list,translate_to: str, max_chars: int):
     for i, seg in enumerate(segments, start=1):
         start_time = seg.start
         end_time = seg.end
-        text = translate_text(seg.text.strip(), translate_to)
+
+        text = (
+            translate_text(seg.text.strip(), translate_to)
+            if translate_to != "no_translation"
+            else seg.text.strip()
+        )
 
         text_chunks = split_text_by_punctuation(text, max_chars)
 
@@ -111,12 +116,12 @@ async def download_subtitle(
         filename: str = Form("subtitles"),
         file_type: str = Form("srt"),
         max_characters: int = Form(DEFAULT_MAX_CHARACTERS),
-        translate_to: str = Form('spanish'),
+        translate_to: str = Form('no_translation'),
 ):
 
     with open('audio.mp3', 'wb') as f:
         f.write(file)
-    
+
     model = stable_whisper.load_model(model_type)
     result = model.transcribe("audio.mp3", regroup=False)
 
