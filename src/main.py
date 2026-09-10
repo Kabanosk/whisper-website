@@ -1,4 +1,8 @@
 from datetime import timedelta
+import os
+import re
+import tempfile
+import uuid
 from typing import Optional
 
 from fastapi import FastAPI, Request, File, Form
@@ -125,18 +129,37 @@ async def download_subtitle(
     model = stable_whisper.load_model(model_type)
     result = model.transcribe("audio.mp3", regroup=False)
 
-    subtitle_file = "subtitle.srt"
+    # Keep the user-provided filename for the download name only.
+    # Never use it as a filesystem path.
+    safe_filename = re.sub(
+        r'[^A-Za-z0-9_.-]',
+        '_',
+        os.path.basename(filename)
+    )
+    safe_filename = os.path.splitext(safe_filename)[0]
+
+    if not safe_filename:
+        safe_filename = "subtitles"
+
+    generated_name = uuid.uuid4().hex
 
     if file_type == "srt":
-        subtitle_file = f"{filename}.srt"
-        with open(subtitle_file, "w") as f:
+        subtitle_file = os.path.join(
+            tempfile.gettempdir(),
+            f"{generated_name}.srt"
+        )
+        with open(subtitle_file, "w", encoding="utf-8") as f:
             if timestamps:
                 f.write(make_srt_subtitles(result.segments, translate_to, max_characters))
             else:
                 f.write(result.text)
+
     elif file_type == "vtt":
-        subtitle_file = f"{filename}.vtt"
-        with open(subtitle_file, "w") as f:
+        subtitle_file = os.path.join(
+            tempfile.gettempdir(),
+            f"{generated_name}.vtt"
+        )
+        with open(subtitle_file, "w", encoding="utf-8") as f:
             if timestamps:
                 f.write(result.to_vtt())
             else:
@@ -144,10 +167,14 @@ async def download_subtitle(
 
 
     media_type = "application/octet-stream"
+    download_filename = f"{safe_filename}.{file_type}"
+
     response = StreamingResponse(
         open(subtitle_file, 'rb'),
         media_type=media_type,
-        headers={'Content-Disposition': f'attachment;filename={subtitle_file}'}
+        headers={
+            'Content-Disposition': f'attachment; filename="{download_filename}"'
+        }
     )
 
     return response
