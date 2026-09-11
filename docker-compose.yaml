@@ -1,0 +1,16 @@
+services:
+  whisper-website:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: whisper-website
+    ports:
+      - "80:80"
+    volumes:
+      - whisper-models:/root/.cache/whisper
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+volumes:
+  whisper-models:
