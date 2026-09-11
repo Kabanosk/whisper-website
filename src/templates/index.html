@@ -42,24 +42,29 @@
         </div>
 
         <div class="mb-3">
-            <label for="max_char" class="form-label">Max characters per subtitle: <small>(default 80)</small></label>
-            <input type="number" name="max_char" class="form-control" placeholder="80">
+            <label for="max_characters" class="form-label">Max characters per subtitle: <small>(default 80)</small></label>
+            <input type="number" id="max_characters" name="max_characters" class="form-control" placeholder="80">
+        </div>
+
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="timestamps" name="timestamps" value="true" checked>
+            <label class="form-check-label" for="timestamps">Include timestamps</label>
         </div>
 
         <div class="mb-3">
             <label for="translate_to" class="form-label">Translate to: </label>
             <select name="translate_to" id="translate_to" class="form-select">
-                <option value=no_translation>No translation</option>
-                <option value=english>English</option>
-                <option value=spanish>Spanish</option>
-                <option value=arabic>Arabic</option>
-                <option value=hindi>Hindi</option>
-                <option value=bengali>Bengali</option>
-                <option value=portuguese>Portuguese</option>
-                <option value=russian>Russian</option>
-                <option value=urdu>Urdu</option>
-                <option value=french>French</option>
-                <option value=chinese>Chinese</option>
+                <option value="no_translation">No translation</option>
+                <option value="english">English</option>
+                <option value="spanish">Spanish</option>
+                <option value="arabic">Arabic</option>
+                <option value="hindi">Hindi</option>
+                <option value="bengali">Bengali</option>
+                <option value="portuguese">Portuguese</option>
+                <option value="russian">Russian</option>
+                <option value="urdu">Urdu</option>
+                <option value="french">French</option>
+                <option value="chinese (simplified)">Chinese</option>
             </select>
         </div>
 
