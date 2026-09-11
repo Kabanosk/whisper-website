@@ -1,26 +1,57 @@
-## Website which convert speech to text by Whisper model ([Official Repo](https://github.com/openai/whisper))
+# whisper-website
 
-## Hosting website on localhost:
+A simple, self-hosted web app for turning audio into text and subtitles, powered by [OpenAI's Whisper](https://github.com/openai/whisper). Upload a file, pick a model, and download `.srt`, `.vtt`, or plain `.txt` - with optional translation.
 
-1. Clone the repo - `git clone https://github.com/Kabanosk/whisper-website.git`
-2. Go to repo directory - `cd whisper-website`
-3. Create virtual environment - `python3 -m venv venv`
-4. Activate the environment - `source venv/bin/activate`/`. venv/bin/activate`
-5. Install requirements - `pip install -r requirements.txt`
-6. Go to src directory - `cd src`
-7. Run the `run.py` file - `python3 run.py`
-8. Go to your browser and type `http://127.0.0.1:8000/` if the browser doesn't open
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python](https://img.shields.io/badge/python-3.9-blue.svg)
 
-## Run website on localhost with Docker
-### First time
-1. Install [Docker](https://docs.docker.com/engine/install/)
-2. Clone the repo - `git clone https://github.com/Kabanosk/whisper-website.git`
-3. Go to repo directory - `cd whisper-website`
-4. Create Docker image - `docker build -t app .`
-5. Run Docker container - `docker run --name app_container -p 80:80 app`
-6. Go to your browser and type `http://127.0.0.1:80/`
+## Features
 
-### Next time
+- Transcription with any Whisper model size (`tiny` → `large`)
+- Export as `.srt`, `.vtt`, or plain `.txt`
+- Optional timestamps - plain text export when they're off
+- Optional translation of the transcript into another language
+- No cloud dependency for transcription - everything runs on your own machine
 
-1. Start your Docker container - `docker start app_container`
-2. Go to your browser and type `http://127.0.0.1:80/`
+## Quick start (Docker Compose)
+
+This is the recommended way to run the app - it also keeps downloaded Whisper models cached between restarts.
+
+1. Install [Docker](https://docs.docker.com/engine/install/) and [Docker Compose](https://docs.docker.com/compose/install/)
+2. Clone the repo:
+   ```bash
+   git clone https://github.com/Kabanosk/whisper-website.git
+   cd whisper-website
+   ```
+3. Start the app:
+   ```bash
+   docker compose up -d
+   ```
+4. Open [http://127.0.0.1](http://127.0.0.1)
+
+To stop it: `docker compose down`. Your downloaded models stay cached in a Docker volume, so the next `up` won't re-download them.
+
+## Quick start (local, no Docker)
+
+1. Clone the repo and go into it:
+   ```bash
+   git clone https://github.com/Kabanosk/whisper-website.git
+   cd whisper-website
+   ```
+2. Create a virtual environment and install dependencies with [uv](https://docs.astral.sh/uv/):
+   ```bash
+   uv venv
+   uv pip install -r requirements.txt
+   ```
+3. Run it:
+   ```bash
+   cd src
+   uv run run.py
+   ```
+4. Open [http://127.0.0.1:8000](http://127.0.0.1:8000) if it doesn't open automatically
+
+You'll also need [ffmpeg](https://ffmpeg.org/download.html) installed and available on your `PATH` for this route - the Docker image already includes it.
+
+## License
+
+[MIT](LICENSE)
