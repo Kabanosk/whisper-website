@@ -3,7 +3,7 @@ name = "whisper-website"
 version = "0.1.0"
 description = "Self-hosted web app for converting audio to text/subtitles using OpenAI's Whisper"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.13"
 license = { file = "LICENSE" }
 dependencies = [
     "fastapi",
