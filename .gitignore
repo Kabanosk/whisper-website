@@ -1,8 +1,6 @@
-
-.gitignore
 .idea/
 __pycache__/
-src/audio.mp3
 venv/
+.venv/
 data/
-
+.env

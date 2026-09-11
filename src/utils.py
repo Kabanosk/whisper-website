@@ -20,9 +20,7 @@ def get_audio_buffer(filename: str, start: int, length: int):
     """
     out, _ = (
         ffmpeg.input(filename, threads=0)
-        .output(
-            "-", format="s16le", acodec="pcm_s16le", ac=1, ar=16000, ss=start, t=length
-        )
+        .output("-", format="s16le", acodec="pcm_s16le", ac=1, ar=16000, ss=start, t=length)
         .run(cmd=["ffmpeg", "-nostdin"], capture_stdout=True, capture_stderr=True)
     )
 
@@ -41,9 +39,7 @@ def transcribe_time_stamps(segments: list):
     """
     string = ""
     for seg in segments:
-        string += " ".join(
-            [str(seg.start), "->", str(seg.end), ": ", seg.text.strip(), "\n"]
-        )
+        string += " ".join([str(seg.start), "->", str(seg.end), ": ", seg.text.strip(), "\n"])
     return string
 
 
@@ -57,11 +53,7 @@ def split_text_by_punctuation(text: str, max_length: int):
     """
     chunks = []
     while len(text) > max_length:
-        split_pos = max(
-            text.rfind(p, 0, max_length)
-            for p in [",", ".", "?", "!", " "]
-            if p in text[:max_length]
-        )
+        split_pos = max(text.rfind(p, 0, max_length) for p in [",", ".", "?", "!", " "] if p in text[:max_length])
 
         if split_pos == -1:
             split_pos = max_length
@@ -106,11 +98,7 @@ def make_srt_subtitles(segments: list, translate_to: str, max_chars: int):
         start_time = seg.start
         end_time = seg.end
 
-        text = (
-            translate_text(seg.text.strip(), translate_to)
-            if translate_to != "no_translation"
-            else seg.text.strip()
-        )
+        text = translate_text(seg.text.strip(), translate_to) if translate_to != "no_translation" else seg.text.strip()
 
         text_chunks = split_text_by_punctuation(text, max_chars)
 
