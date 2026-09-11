@@ -1,180 +1,78 @@
-from datetime import timedelta
 import os
 import re
 import tempfile
 import uuid
-from typing import Optional
 
-from fastapi import FastAPI, Request, File, Form
-from fastapi.responses import HTMLResponse, StreamingResponse
+import stable_whisper
+from fastapi import FastAPI, File, Form, Request
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-import ffmpeg
-import numpy as np
-import srt as srt
-import stable_whisper
-from deep_translator import GoogleTranslator
+from starlette.background import BackgroundTask
 
-DEFAULT_MAX_CHARACTERS = 80
-
-
-def get_audio_buffer(filename: str, start: int, length: int):
-    """
-    input: filename of the audio file, start time in seconds, length of the audio in seconds
-    output: np array of the audio data which the model's transcribe function can take as input
-    """
-    out, _ = (
-        ffmpeg.input(filename, threads=0)
-        .output("-", format="s16le", acodec="pcm_s16le", ac=1, ar=16000, ss=start, t=length)
-        .run(cmd=["ffmpeg", "-nostdin"], capture_stdout=True, capture_stderr=True)
-    )
-
-    return np.frombuffer(out, np.int16).flatten().astype(np.float32) / 32768.0
-
-
-def transcribe_time_stamps(segments: list):
-    """
-    input: a list of segments from the model's transcribe function
-    output: a string of the timestamps and the text of each segment
-    """
-    string = ""
-    for seg in segments:
-        string += " ".join([str(seg.start), "->", str(seg.end), ": ", seg.text.strip(), "\n"])
-    return string
-
-
-def split_text_by_punctuation(text: str, max_length: int):
-    chunks = []
-    while len(text) > max_length:
-
-        split_pos = max(
-            text.rfind(p, 0, max_length) for p in [",", ".", "?", "!"," "] if p in text[:max_length]
-        )
-
-
-        if split_pos == -1:
-            split_pos = max_length
-
-
-        chunks.append(text[:split_pos + 1].strip())
-        text = text[split_pos + 1:].strip()
-
-    if text:
-        chunks.append(text)
-
-    return chunks
-
-
-def translate_text(text: str, translate_to: str):
-    return GoogleTranslator(source='auto', target=translate_to).translate(text=text)
-
-
-def make_srt_subtitles(segments: list,translate_to: str, max_chars: int):
-    subtitles = []
-    for i, seg in enumerate(segments, start=1):
-        start_time = seg.start
-        end_time = seg.end
-
-        text = (
-            translate_text(seg.text.strip(), translate_to)
-            if translate_to != "no_translation"
-            else seg.text.strip()
-        )
-
-        text_chunks = split_text_by_punctuation(text, max_chars)
-
-        duration = (end_time - start_time) / len(text_chunks)
-
-        for j, chunk in enumerate(text_chunks):
-            chunk_start = start_time + j * duration
-            chunk_end = chunk_start + duration
-
-            subtitle = srt.Subtitle(
-                index=len(subtitles) + 1,
-                start=timedelta(seconds=chunk_start),
-                end=timedelta(seconds=chunk_end),
-                content=chunk
-            )
-            subtitles.append(subtitle)
-
-    return srt.compose(subtitles)
-
+from utils import DEFAULT_MAX_CHARACTERS, make_srt_subtitles, safe_remove
 
 app = FastAPI(debug=True)
 
-app.mount('/static', StaticFiles(directory='static'), name='static')
-template = Jinja2Templates(directory='templates')
+app.mount("/static", StaticFiles(directory="static"), name="static")
+template = Jinja2Templates(directory="templates")
 
 
-@app.get('/', response_class=HTMLResponse)
+@app.get("/", response_class=HTMLResponse)
 def index(request: Request):
-    return template.TemplateResponse('index.html', {"request": request, "text": None})
+    return template.TemplateResponse("index.html", {"request": request, "text": None})
 
 
-@app.post('/download/')
-async def download_subtitle(
-        request: Request,
-        file: bytes = File(),
-        model_type: str = Form("tiny"),
-        timestamps: Optional[str] = Form("False"),
-        filename: str = Form("subtitles"),
-        file_type: str = Form("srt"),
-        max_characters: int = Form(DEFAULT_MAX_CHARACTERS),
-        translate_to: str = Form('no_translation'),
+@app.post("/download/")
+def download_subtitle(
+    request: Request,
+    file: bytes = File(),
+    model_type: str = Form("tiny"),
+    timestamps: bool = Form(False),
+    filename: str = Form("subtitles"),
+    file_type: str = Form("srt"),
+    max_characters: int = Form(DEFAULT_MAX_CHARACTERS),
+    translate_to: str = Form("no_translation"),
 ):
+    if file_type not in ("srt", "vtt"):
+        file_type = "srt"
 
-    with open('audio.mp3', 'wb') as f:
+    audio_file = os.path.join(tempfile.gettempdir(), f"{uuid.uuid4().hex}.mp3")
+    with open(audio_file, "wb") as f:
         f.write(file)
 
-    model = stable_whisper.load_model(model_type)
-    result = model.transcribe("audio.mp3", regroup=False)
+    try:
+        model = stable_whisper.load_model(model_type)
+        result = model.transcribe(audio_file, regroup=False)
+    finally:
+        safe_remove(audio_file)
 
-    # Keep the user-provided filename for the download name only.
-    # Never use it as a filesystem path.
-    safe_filename = re.sub(
-        r'[^A-Za-z0-9_.-]',
-        '_',
-        os.path.basename(filename)
-    )
+    safe_filename = re.sub(r"[^A-Za-z0-9_.-]", "_", os.path.basename(filename))
     safe_filename = os.path.splitext(safe_filename)[0]
 
     if not safe_filename:
         safe_filename = "subtitles"
 
+    output_extension = file_type if timestamps else "txt"
+
     generated_name = uuid.uuid4().hex
-
-    if file_type == "srt":
-        subtitle_file = os.path.join(
-            tempfile.gettempdir(),
-            f"{generated_name}.srt"
-        )
-        with open(subtitle_file, "w", encoding="utf-8") as f:
-            if timestamps:
-                f.write(make_srt_subtitles(result.segments, translate_to, max_characters))
-            else:
-                f.write(result.text)
-
-    elif file_type == "vtt":
-        subtitle_file = os.path.join(
-            tempfile.gettempdir(),
-            f"{generated_name}.vtt"
-        )
-        with open(subtitle_file, "w", encoding="utf-8") as f:
-            if timestamps:
-                f.write(result.to_vtt())
-            else:
-                f.write(result.text)
-
-
-    media_type = "application/octet-stream"
-    download_filename = f"{safe_filename}.{file_type}"
-
-    response = StreamingResponse(
-        open(subtitle_file, 'rb'),
-        media_type=media_type,
-        headers={
-            'Content-Disposition': f'attachment; filename="{download_filename}"'
-        }
+    subtitle_file = os.path.join(
+        tempfile.gettempdir(), f"{generated_name}.{output_extension}"
     )
 
-    return response
+    with open(subtitle_file, "w", encoding="utf-8") as f:
+        if not timestamps:
+            f.write(result.text)
+        elif file_type == "srt":
+            f.write(make_srt_subtitles(result.segments, translate_to, max_characters))
+        elif file_type == "vtt":
+            f.write(result.to_vtt())
+
+    download_filename = f"{safe_filename}.{output_extension}"
+
+    return FileResponse(
+        path=subtitle_file,
+        media_type="application/octet-stream",
+        filename=download_filename,
+        background=BackgroundTask(safe_remove, subtitle_file),
+    )

@@ -1,20 +1,20 @@
+import webbrowser
+from multiprocessing import Process
 from pathlib import Path
 from time import sleep
-import uvicorn
-import webbrowser
 
-from multiprocessing import Process
+import uvicorn
 
 
 def open_browser():
-    webbrowser.open('http://127.0.0.1:8000')
+    webbrowser.open("http://127.0.0.1:8000")
 
 
 def run_localhost():
-    uvicorn.run('main:app')
+    uvicorn.run("main:app")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     open_browser_proc = Process(target=open_browser)
     run_localhost_proc = Process(target=run_localhost)
     Path("../data").mkdir(parents=True, exist_ok=True)
