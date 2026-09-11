@@ -56,9 +56,7 @@ def download_subtitle(
     output_extension = file_type if timestamps else "txt"
 
     generated_name = uuid.uuid4().hex
-    subtitle_file = os.path.join(
-        tempfile.gettempdir(), f"{generated_name}.{output_extension}"
-    )
+    subtitle_file = os.path.join(tempfile.gettempdir(), f"{generated_name}.{output_extension}")
 
     with open(subtitle_file, "w", encoding="utf-8") as f:
         if not timestamps:
