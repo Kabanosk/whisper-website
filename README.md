@@ -38,10 +38,9 @@ To stop it: `docker compose down`. Your downloaded models stay cached in a Docke
    git clone https://github.com/Kabanosk/whisper-website.git
    cd whisper-website
    ```
-2. Create a virtual environment and install dependencies with [uv](https://docs.astral.sh/uv/):
+2. Install dependencies with [uv](https://docs.astral.sh/uv/) - this also creates the virtual environment:
    ```bash
-   uv venv
-   uv pip install -r requirements.txt
+   uv sync
    ```
 3. Run it:
    ```bash
