@@ -6,18 +6,12 @@ import time
 import stable_whisper
 from loguru import logger
 
-MODEL_IDLE_TIMEOUT_SECONDS = int(os.environ.get("MODEL_IDLE_TIMEOUT_SECONDS", 5 * 60))
+MODEL_IDLE_TIMEOUT_SECONDS = int(os.environ.get("MODEL_IDLE_TIMEOUT_SECONDS", str(5 * 60)))
 _EVICT_CHECK_INTERVAL_SECONDS = 30
 
 
 class _ModelCache:
-    """Keeps loaded Whisper models in memory, keyed by model_type.
-
-    Each cached model is evicted independently (freeing RAM/VRAM) after
-    MODEL_IDLE_TIMEOUT_SECONDS of not being used, so switching between a
-    handful of model sizes doesn't force a reload every time, while
-    models nobody's touched in a while still get cleaned up.
-    """
+    """Keeps loaded Whisper models in memory, keyed by model_type."""
 
     def __init__(self):
         """Start with an empty cache — no models loaded yet."""
@@ -41,7 +35,8 @@ class _ModelCache:
                 self._last_used[model_type] = now
                 logger.info(
                     "Reusing cached Whisper model {!r} (was idle for {:.1f}s)",
-                    model_type, idle_for,
+                    model_type,
+                    idle_for,
                 )
                 return self._models[model_type]
 
