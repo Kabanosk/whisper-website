@@ -3,13 +3,13 @@ import re
 import tempfile
 import uuid
 
-import stable_whisper
 from fastapi import FastAPI, File, Form, Request
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.background import BackgroundTask
 
+from model_cache import get_model
 from utils import DEFAULT_MAX_CHARACTERS, make_srt_subtitles, safe_remove
 
 app = FastAPI(debug=True)
@@ -20,7 +20,7 @@ template = Jinja2Templates(directory="templates")
 
 @app.get("/", response_class=HTMLResponse)
 def index(request: Request):
-    return template.TemplateResponse("index.html", {"request": request, "text": None})
+    return template.TemplateResponse(request, "index.html", {"text": None})
 
 
 @app.post("/download/")
@@ -42,7 +42,7 @@ def download_subtitle(
         f.write(file)
 
     try:
-        model = stable_whisper.load_model(model_type)
+        model = get_model(model_type)
         result = model.transcribe(audio_file, regroup=False)
     finally:
         safe_remove(audio_file)

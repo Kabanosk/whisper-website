@@ -3,7 +3,7 @@
 A simple, self-hosted web app for turning audio into text and subtitles, powered by [OpenAI's Whisper](https://github.com/openai/whisper). Upload a file, pick a model, and download `.srt`, `.vtt`, or plain `.txt` - with optional translation.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Python](https://img.shields.io/badge/python-3.9-blue.svg)
+![Python](https://img.shields.io/badge/python-3.13-blue.svg)
 
 ## Features
 

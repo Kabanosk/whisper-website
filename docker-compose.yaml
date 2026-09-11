@@ -10,6 +10,7 @@ services:
       - whisper-models:/root/.cache/whisper
     environment:
       - PYTHONUNBUFFERED=1
+      - MODEL_IDLE_TIMEOUT_SECONDS=300
     restart: unless-stopped
 
 volumes:
