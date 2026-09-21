@@ -3,7 +3,7 @@
 A simple, self-hosted web app for turning audio into text and subtitles, powered by [OpenAI's Whisper](https://github.com/openai/whisper). Upload a file, pick a model, and download `.srt`, `.vtt`, or plain `.txt` - with optional translation.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Python](https://img.shields.io/badge/python-3.9-blue.svg)
+![Python](https://img.shields.io/badge/python-3.13-blue.svg)
 
 ## Features
 
@@ -38,10 +38,9 @@ To stop it: `docker compose down`. Your downloaded models stay cached in a Docke
    git clone https://github.com/Kabanosk/whisper-website.git
    cd whisper-website
    ```
-2. Create a virtual environment and install dependencies with [uv](https://docs.astral.sh/uv/):
+2. Install dependencies with [uv](https://docs.astral.sh/uv/) - this also creates the virtual environment:
    ```bash
-   uv venv
-   uv pip install -r requirements.txt
+   uv sync
    ```
 3. Run it:
    ```bash
