@@ -45,7 +45,7 @@ To stop it: `docker compose down`. Your downloaded models stay cached in a Docke
 3. Run it:
    ```bash
    cd src
-   uv run run.py
+   uv run uvicorn main:app --reload
    ```
 4. Open [http://127.0.0.1:8000](http://127.0.0.1:8000) if it doesn't open automatically
 
@@ -54,3 +54,4 @@ You'll also need [ffmpeg](https://ffmpeg.org/download.html) installed and availa
 ## License
 
 [MIT](LICENSE)
+
