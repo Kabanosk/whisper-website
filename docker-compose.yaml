@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: whisper-website
     ports:
-      - "80:80"
+      - "80:8000"
     volumes:
       - whisper-models:/root/.cache/whisper
     environment:

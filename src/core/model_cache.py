@@ -1,12 +1,12 @@
 import gc
-import os
 import threading
 import time
 
 import stable_whisper
 from loguru import logger
 
-MODEL_IDLE_TIMEOUT_SECONDS = int(os.environ.get("MODEL_IDLE_TIMEOUT_SECONDS", str(5 * 60)))
+from config import settings
+
 _EVICT_CHECK_INTERVAL_SECONDS = 30
 
 
@@ -67,13 +67,13 @@ class _ModelCache:
             pass
 
     def evict_idle(self):
-        """Evict every cached model that's been idle past MODEL_IDLE_TIMEOUT_SECONDS."""
+        """Evict every cached model that's been idle."""
         with self._lock:
             now = time.monotonic()
             idle_types = [
                 model_type
                 for model_type, last_used in self._last_used.items()
-                if now - last_used > MODEL_IDLE_TIMEOUT_SECONDS
+                if now - last_used > settings.model_idle_timeout_seconds
             ]
             for model_type in idle_types:
                 self._evict_locked(model_type)
