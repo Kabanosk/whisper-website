@@ -25,3 +25,12 @@ package = false
 
 [tool.ruff]
 line-length = 120
+
+[tool.ruff.lint]
+ignore = ["B008"]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.6.2",
+    "ruff>=0.16.8",
+]
