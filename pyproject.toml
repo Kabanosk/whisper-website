@@ -12,14 +12,12 @@ dependencies = [
     "python-multipart",
     "stable-ts",
     "loguru",
-    "numpy",
     "torch",
-    "tqdm",
-    "more-itertools",
-    "transformers>=4.19.0",
-    "ffmpeg-python==0.2.0",
     "deep_translator",
     "srt~=3.5.3",
+    "starlette>=1.6.0",
+    "pydantic-settings>=2.15.0",
+    "pydantic>=2.13.5",
 ]
 
 [tool.uv]
