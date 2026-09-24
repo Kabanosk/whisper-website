@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from api.transcription import router
 from exceptions import register_exception_handlers
 
-app = FastAPI(debug=True)
+app = FastAPI()
 
 app.include_router(router)
 register_exception_handlers(app)
