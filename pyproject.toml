@@ -29,8 +29,13 @@ line-length = 120
 [tool.ruff.lint]
 ignore = ["B008"]
 
+[tool.pytest.ini_options]
+pythonpath = "src"
+testpaths = ["tests/"]
+
 [dependency-groups]
 dev = [
     "pre-commit>=4.6.2",
+    "pytest>=9.1.1",
     "ruff>=0.16.8",
 ]
