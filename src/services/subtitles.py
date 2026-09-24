@@ -20,13 +20,15 @@ def make_srt_subtitles(segments: list, translate_to: str, max_chars: int):
     :rtype: str
     """
     subtitles = []
-    for i, seg in enumerate(segments, start=1):
+    for seg in segments:
         start_time = seg.start
         end_time = seg.end
 
         text = translate_text(seg.text.strip(), translate_to) if translate_to != "no_translation" else seg.text.strip()
 
         text_chunks = split_text_by_punctuation(text, max_chars)
+        if not text_chunks:
+            continue
 
         duration = (end_time - start_time) / len(text_chunks)
 
@@ -68,10 +70,10 @@ def split_text_by_punctuation(text: str, max_length: int):
     """
     chunks = []
     while len(text) > max_length:
-        split_pos = max(text.rfind(p, 0, max_length) for p in [",", ".", "?", "!", " "] if p in text[:max_length])
-
-        if split_pos == -1:
-            split_pos = max_length
+        split_pos = max(
+            [text.rfind(p, 0, max_length) for p in [",", ".", "?", "!", " "] if p in text[:max_length]],
+            default=max_length - 1,
+        )
 
         chunks.append(text[: split_pos + 1].strip())
         text = text[split_pos + 1 :].strip()
